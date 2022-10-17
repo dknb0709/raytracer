@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <vector>
 
 static const unsigned int BITMAP_FILE_HEADER_SIZE = 14;
 static const unsigned int BITMAP_INFO_HEADER_SIZE = 40;
@@ -72,9 +73,9 @@ class Bitmap {
     }
     m_image = new Image(w, h);
     int stride = (w * 3 + 3) / 4 * 4;
-    char row[stride];
+    std::vector<char> row(stride);
     for (int y = 0; y < h; ++y) {
-      fin.read(row, sizeof(char) * stride);
+      fin.read(row.data(), sizeof(char) * stride);
       for (int x = 0; x < w; ++x) {
         Color& pixel = m_image->data[x + w * (h - 1 - y)];
         pixel.b = row[x * 3 + 0];
@@ -118,7 +119,7 @@ class Bitmap {
     fout.write(headerBuffer, sizeof(char) * BITMAP_HEADER_SIZE);
 
     // write image data
-    char row[stride];
+    std::vector<char> row(stride);
     for (int y = 0; y < m_image->h; ++y) {
       for (int x = 0; x < m_image->w; ++x) {
         Color c = m_image->data[x + m_image->w * (m_image->h - 1 - y)];
@@ -126,7 +127,7 @@ class Bitmap {
         row[3 * x + 1] = c.g;
         row[3 * x + 2] = c.r;
       }
-      fout.write(row, stride);
+      fout.write(row.data(), stride);
     }
   }
 
